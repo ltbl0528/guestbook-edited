@@ -19,13 +19,13 @@ public class GuestbookController {
 
     @GetMapping("/")
     public String index() {
-        log.info("list....................");
 
         return "redirect:/guestbook/list";
     }
 
     @GetMapping("/list")
     public void list(PageRequestDTO pageRequestDTO, Model model) {
+        log.info("list...................." + pageRequestDTO);
         model.addAttribute("result", service.getList(pageRequestDTO));
     }
 }
