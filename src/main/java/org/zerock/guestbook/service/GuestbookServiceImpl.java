@@ -12,6 +12,7 @@ import org.zerock.guestbook.dto.PageResultDTO;
 import org.zerock.guestbook.entity.Guestbook;
 import org.zerock.guestbook.repository.GuestbookRepository;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 @Service
@@ -47,5 +48,15 @@ public class GuestbookServiceImpl implements GuestbookService{
         Function<Guestbook, GuestbookDTO> fn = (entity -> entityToDTO(entity));
 
         return new PageResultDTO<>(result, fn);
+    }
+
+    //방명록 읽어오는 service
+    @Override
+    public GuestbookDTO read(Long gno) {
+        
+        Optional<Guestbook> result = repository.findById(gno);
+        
+        //gno 로 찾은 결과가 있을 경우 entity 객체를 DTO로 변환해 반환. 없을 경우 null 반환
+        return result.isPresent()? entityToDTO(result.get()) : null;
     }
 }
