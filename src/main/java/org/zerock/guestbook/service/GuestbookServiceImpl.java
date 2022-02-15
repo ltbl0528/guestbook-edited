@@ -38,6 +38,7 @@ public class GuestbookServiceImpl implements GuestbookService{
         return entity.getGno();
     }
 
+    //페이지 리스트 받아오고 DTO로 변환하는 기능
     @Override
     public PageResultDTO<GuestbookDTO, Guestbook> getList(PageRequestDTO requestDTO) {
 
@@ -50,7 +51,7 @@ public class GuestbookServiceImpl implements GuestbookService{
         return new PageResultDTO<>(result, fn);
     }
 
-    //방명록 읽어오는 service
+    //방명록 읽어오는 기능 구현
     @Override
     public GuestbookDTO read(Long gno) {
         
@@ -58,5 +59,26 @@ public class GuestbookServiceImpl implements GuestbookService{
         
         //gno 로 찾은 결과가 있을 경우 entity 객체를 DTO로 변환해 반환. 없을 경우 null 반환
         return result.isPresent()? entityToDTO(result.get()) : null;
+    }
+
+    @Override
+    public void remove(Long gno) {
+        repository.deleteById(gno);
+    }
+
+    @Override
+    public void modify(GuestbookDTO dto){
+        //제목, 내용을 업데이트
+
+        Optional<Guestbook> result = repository.findById(dto.getGno());
+
+        if(result.isPresent()) {
+            Guestbook entity = result.get();
+
+            entity.changeTitle(dto.getTitle());
+            entity.changeContent(dto.getContent());
+
+            repository.save(entity);
+        }
     }
 }

@@ -53,6 +53,7 @@ public class GuestbookController {
 
     //GET 방식으로 gno 값을 받아 Model에 GuestbookDTO 객체를 담아서 전달하도록 작성
     //후에 목록 페이지로 돌아가야 하므로 PageRequestDTO를 파라미터로 사용
+    //modify도 읽어올 때 기능은 read와 같으므로 같은 메소드를 사용(
     @GetMapping({"/read", "/modify"})
     public void read(long gno, @ModelAttribute("requestDTO") PageRequestDTO requestDTO, Model model) {
 
@@ -61,5 +62,32 @@ public class GuestbookController {
         GuestbookDTO dto = service.read(gno);
 
         model.addAttribute("dto", dto);
+    }
+
+    @PostMapping("/remove")
+    public String remove(long gno, RedirectAttributes redirectAttributes) {
+
+        log.info("gno: "+ gno);
+
+        service.remove(gno);
+
+        redirectAttributes.addFlashAttribute("msg", gno);
+
+        return "redirect:/guestbook/list";
+    }
+
+    @PostMapping("/modify")
+    public String modify(GuestbookDTO dto, @ModelAttribute("requestDTO") PageRequestDTO requestDTO
+    , RedirectAttributes redirectAttributes) {
+
+        log.info("post modify..........................................");
+        log.info("dto: "+ dto);
+
+        service.modify(dto);
+
+        redirectAttributes.addAttribute("page", requestDTO.getPage());
+        redirectAttributes.addAttribute("gno", dto.getGno());
+
+        return "redirect:/guestbook/read";
     }
 }
