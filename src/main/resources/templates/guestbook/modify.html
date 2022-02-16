@@ -11,6 +11,9 @@
         <form th:action="@{/guestbook/modify}" method="post">
             <!--페이지 번호-->
             <input type="hidden" name="page" th:value="${requestDTO.page}">
+            <!--조회 페이지로 돌아가기 위한 검색 조건 유지-->
+            <input type="hidden" name="type" th:value="${requestDTO.type}">
+            <input type="hidden" name="keyword" th:value="${requestDTO.keyword}">
             <div class="form-group">
                 <label>Gno</label>
                 <input type="text" class="form-control" name="gno" th:value="${dto.gno}" readonly>
@@ -41,13 +44,7 @@
         <button type="button" class="btn btn-info marginBtn listBtn">List</button>
 
         <button type="button" class="btn btn-danger marginBtn removeBtn">Delete</button>
-        <!--
-        <a th:href="@{/guestbook/modify(gno= ${dto.gno}, page= ${requestDTO.page})}">
-            <button type="button" class="btn btn-primary marginBtn">Modify</button>
-        </a>
-        <a th:href="@{/guestbook/list(page= ${requestDTO.page})}">
-        </a>
-        -->
+
         <script th:inline="javascript">
             var actionForm = $("form");
 
@@ -65,14 +62,20 @@
             });
             $(".listBtn").click(function(){
 
-                var pageInfo = $("input[name='page']");
+                var page = $("input[name='page']");
+                var type = $("input[name='type']");
+                var keyword = $("input[name='keyword']");
 
                 actionForm.empty();
-                actionForm.append(pageInfo);
+
+                actionForm.append(page);
+                actionForm.append(type);
+                actionForm.append(keyword);
+
                 actionForm
                     .attr("action", "/guestbook/list")
                     .attr("method", "get");
-                console.log(actionForm.html());
+
                 actionForm.submit();
             });
 

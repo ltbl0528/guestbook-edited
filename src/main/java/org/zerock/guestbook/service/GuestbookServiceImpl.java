@@ -1,5 +1,7 @@
 package org.zerock.guestbook.service;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
@@ -10,6 +12,7 @@ import org.zerock.guestbook.dto.GuestbookDTO;
 import org.zerock.guestbook.dto.PageRequestDTO;
 import org.zerock.guestbook.dto.PageResultDTO;
 import org.zerock.guestbook.entity.Guestbook;
+import org.zerock.guestbook.entity.QGuestbook;
 import org.zerock.guestbook.repository.GuestbookRepository;
 
 import java.util.Optional;
@@ -44,7 +47,9 @@ public class GuestbookServiceImpl implements GuestbookService{
 
         Pageable pageable = requestDTO.getPageable(Sort.by("gno").descending());
 
-        Page<Guestbook> result = repository.findAll(pageable);
+        BooleanBuilder booleanBuilder = getSearch(requestDTO); // 검색 조건 처리
+
+        Page<Guestbook> result = repository.findAll(booleanBuilder, pageable); // querydsl 사용
 
         Function<Guestbook, GuestbookDTO> fn = (entity -> entityToDTO(entity));
 
@@ -80,5 +85,44 @@ public class GuestbookServiceImpl implements GuestbookService{
 
             repository.save(entity);
         }
+    }
+
+    //Querydsl 처리
+    private BooleanBuilder getSearch(PageRequestDTO requestDTO) {
+        String type = requestDTO.getType();
+
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+
+        QGuestbook qGuestbook = QGuestbook.guestbook;
+
+        String keyword = requestDTO.getKeyword();
+
+        //gno > 0 조건만 생성
+        BooleanExpression expression = qGuestbook.gno.gt(0L);
+
+        booleanBuilder.and(expression);
+
+        //검색 조건이 없거나, 공백만 입력되었을 경우
+        if(type == null || type.trim().length() == 0) {
+            return booleanBuilder;
+        }
+
+        //검색 조건 작성
+        BooleanBuilder conditionBuilder = new BooleanBuilder();
+
+        if(type.contains("t")){ //title 검색
+            conditionBuilder.or(qGuestbook.title.contains(keyword));
+        }
+        if(type.contains("c")) { // content 검색
+            conditionBuilder.or(qGuestbook.content.contains(keyword));
+        }
+        if(type.contains("w")) { // writer 검색
+            conditionBuilder.or(qGuestbook.writer.contains(keyword));
+        }
+
+        //모든 조건 통합
+        booleanBuilder.and(conditionBuilder);
+
+        return booleanBuilder;
     }
 }
